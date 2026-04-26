@@ -41,9 +41,21 @@ class Project(ProjectBase):
 
 # --- Profile ---
 class ProfileBase(BaseModel):
-    bio: Optional[str] = None
-    years_of_experience: int = 0
-    skills: str = "{}"
+    title: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    location: Optional[str] = None
+    age: Optional[str] = None
+    career_goals: Optional[str] = None
+    photo: Optional[str] = None
+    
+    software: str = "[]"
+    skills: str = "[]"
+    education: str = "[]"
+    experience: str = "[]"
+    languages: str = "[]"
+    certificates: str = "[]"
+    
     linkedin_url: Optional[str] = None
     github_url: Optional[str] = None
 

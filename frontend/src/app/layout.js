@@ -17,6 +17,8 @@ export const metadata = {
   description: "Professional BIM Portfolio & CV",
 };
 
+import { AuthProvider } from "@/context/AuthContext";
+
 export default function RootLayout({ children }) {
   return (
     <html
@@ -27,7 +29,11 @@ export default function RootLayout({ children }) {
         <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" strategy="beforeInteractive" />
         <Script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js" strategy="afterInteractive" />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

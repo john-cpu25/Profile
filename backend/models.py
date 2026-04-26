@@ -22,9 +22,22 @@ class Profile(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    bio = Column(Text, nullable=True)
-    years_of_experience = Column(Integer, default=0)
-    skills = Column(String, default="{}") # Storing JSON string for simplicity with SQLite
+    
+    title = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    location = Column(String, nullable=True)
+    age = Column(String, nullable=True)
+    career_goals = Column(Text, nullable=True)
+    photo = Column(Text, nullable=True) # Storing base64 or URL
+
+    software = Column(Text, default="[]") 
+    skills = Column(Text, default="[]") 
+    education = Column(Text, default="[]")
+    experience = Column(Text, default="[]")
+    languages = Column(Text, default="[]")
+    certificates = Column(Text, default="[]")
+
     linkedin_url = Column(String, nullable=True)
     github_url = Column(String, nullable=True)
 

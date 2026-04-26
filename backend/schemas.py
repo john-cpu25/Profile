@@ -28,7 +28,7 @@ class ProjectBase(BaseModel):
     is_team_project: bool = False
 
 class ProjectCreate(ProjectBase):
-    pass
+    media: Optional[List[MediaCreate]] = []
 
 class Project(ProjectBase):
     id: int

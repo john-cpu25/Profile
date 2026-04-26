@@ -75,13 +75,15 @@ def read_user_profile(current_user: models.User = Depends(auth.get_current_user)
 
 @app.put("/api/profile/me", response_model=schemas.Profile)
 def update_user_profile(profile: schemas.ProfileCreate, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
-    db_profile = current_user.profile
+    db_profile = db.query(models.Profile).filter(models.Profile.user_id == current_user.id).first()
+    
     if db_profile:
         for key, value in profile.dict(exclude_unset=True).items():
             setattr(db_profile, key, value)
     else:
         db_profile = models.Profile(**profile.dict(), user_id=current_user.id)
         db.add(db_profile)
+        
     db.commit()
     db.refresh(db_profile)
     return db_profile
@@ -95,10 +97,24 @@ def get_user_public_profile(username: str, db: Session = Depends(get_db)):
 
 @app.post("/api/projects", response_model=schemas.Project)
 def create_project(project: schemas.ProjectCreate, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
-    db_project = models.Project(**project.dict(), user_id=current_user.id)
+    # Extract media from schema
+    media_data = project.media
+    project_dict = project.dict()
+    del project_dict["media"]
+    
+    db_project = models.Project(**project_dict, user_id=current_user.id)
     db.add(db_project)
     db.commit()
     db.refresh(db_project)
+    
+    # Create media entries
+    if media_data:
+        for m in media_data:
+            db_media = models.ProjectMedia(**m.dict(), project_id=db_project.id)
+            db.add(db_media)
+        db.commit()
+        db.refresh(db_project)
+        
     return db_project
 
 @app.get("/api/projects", response_model=List[schemas.Project])

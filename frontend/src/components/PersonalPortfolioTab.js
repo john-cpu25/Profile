@@ -8,8 +8,27 @@ import {
   MapPin, Calendar, Info, Layers, X
 } from "lucide-react";
 
-export default function PersonalPortfolioTab({ headerData, setHeaderData, projects, setProjects, isEditing }) {
+export default function PersonalPortfolioTab({ headerData, setHeaderData, projects, setProjects, isEditing, currentTheme }) {
   const scrollRef = useRef(null);
+
+  const [selectedIndices, setSelectedIndices] = useState([]);
+
+  const toggleSelect = (e, index) => {
+    e.stopPropagation();
+    if (selectedIndices.includes(index)) {
+      setSelectedIndices(selectedIndices.filter(i => i !== index));
+    } else {
+      setSelectedIndices([...selectedIndices, index]);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    console.log("Attempting to delete indices:", selectedIndices);
+    const newProjects = projects.filter((_, index) => !selectedIndices.includes(index));
+    console.log("Old projects count:", projects.length, "New count:", newProjects.length);
+    setProjects(newProjects);
+    setSelectedIndices([]);
+  };
 
   const scroll = (direction) => {
     if (scrollRef.current) {
@@ -51,16 +70,20 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
     setProjects(newProjects);
   };
 
+  const themeClass = currentTheme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-slate-950 text-white';
+  const glassClass = currentTheme === 'light' ? 'bg-white/40 backdrop-blur-md' : 'bg-slate-950/40 backdrop-blur-md';
+
   return (
-    <div className="fixed inset-0 left-[80px] z-0 overflow-hidden bg-slate-950 text-white font-sans">
-      {/* Navigation Controls */}
-      <div className="absolute top-1/2 left-4 -translate-y-1/2 z-50">
-        <button onClick={() => scroll('left')} className="p-4 bg-slate-900/90 border border-slate-800 rounded-full hover:bg-blue-600 transition-all shadow-2xl active:scale-90">
+    <div className={`fixed top-0 bottom-0 right-0 left-[80px] md:left-[96px] z-0 overflow-hidden font-sans flex flex-col transition-all duration-700 ${currentTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+       {/* THEME BACKGROUND OVERLAY */}
+       <div className={`absolute inset-0 z-[-1] opacity-100 transition-all duration-700 ${currentTheme === 'midnight' ? 'bg-midnight' : currentTheme === 'emerald' ? 'bg-emerald-theme' : currentTheme === 'deepsea' ? 'bg-deepsea' : currentTheme === 'slate' ? 'bg-slate-theme' : 'bg-light-theme'}`} />
+      {/* Navigation Controls (Moved to Bottom Right Pill) */}
+      <div className={`absolute bottom-10 right-10 z-50 flex items-center p-1.5 rounded-[2rem] border shadow-2xl transition-all duration-500 ${currentTheme === 'light' ? 'bg-white/80 border-slate-200' : 'bg-slate-950/80 border-slate-800'} backdrop-blur-md`}>
+        <button onClick={() => scroll('left')} className={`p-4 rounded-full transition-all active:scale-95 ${currentTheme === 'light' ? 'hover:bg-slate-100 text-slate-800' : 'hover:bg-slate-800 text-white'}`}>
           <ChevronLeft size={24} />
         </button>
-      </div>
-      <div className="absolute top-1/2 right-4 -translate-y-1/2 z-50">
-        <button onClick={() => scroll('right')} className="p-4 bg-slate-900/90 border border-slate-800 rounded-full hover:bg-blue-600 transition-all shadow-2xl active:scale-90">
+        <div className={`w-[1px] h-8 mx-2 ${currentTheme === 'light' ? 'bg-slate-200' : 'bg-slate-800'}`}></div>
+        <button onClick={() => scroll('right')} className={`p-4 rounded-full transition-all active:scale-95 ${currentTheme === 'light' ? 'hover:bg-slate-100 text-slate-800' : 'hover:bg-slate-800 text-white'}`}>
           <ChevronRight size={24} />
         </button>
       </div>
@@ -71,80 +94,148 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
       >
         
         {/* 1. COVER PAGE */}
-        <div className="min-w-full h-full snap-start flex-shrink-0 flex items-center justify-center p-12 md:p-24 relative overflow-hidden">
+        <div className="w-full h-full snap-start flex-shrink-0 flex items-center justify-center p-12 md:p-24 relative overflow-hidden">
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#1e293b,transparent)] opacity-50" />
            <div className="relative z-10 text-center lg:text-left flex-1 max-w-5xl space-y-10">
               <div className="space-y-4">
-                <h1 className="text-9xl md:text-[14rem] font-black uppercase tracking-tighter leading-[0.7] text-white">Portfolio<span className="text-blue-600">.</span></h1>
+                <h1 className={`text-8xl md:text-[10rem] font-black uppercase tracking-tighter leading-[0.8] ${currentTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>Portfolio<span className="text-blue-600">.</span></h1>
                 <div className="flex flex-col gap-2">
                   {isEditing ? (
                     <>
-                      <input value={headerData.name} onChange={(e) => setHeaderData({...headerData, name: e.target.value})} className="text-4xl md:text-6xl font-bold uppercase tracking-widest text-slate-200 bg-transparent border-b border-slate-800 focus:outline-none w-full" />
+                      <input value={headerData.name} onChange={(e) => setHeaderData({...headerData, name: e.target.value})} className={`text-4xl md:text-6xl font-bold uppercase tracking-widest bg-transparent border-b border-slate-800 focus:outline-none w-full ${currentTheme === 'light' ? 'text-slate-800' : 'text-slate-200'}`} />
                       <input value={headerData.title} onChange={(e) => setHeaderData({...headerData, title: e.target.value})} className="text-slate-500 font-bold uppercase tracking-[0.4em] text-lg bg-transparent border-b border-slate-800 focus:outline-none w-full" />
                     </>
                   ) : (
                     <>
-                      <h2 className="text-4xl md:text-6xl font-bold uppercase tracking-widest text-slate-200">{headerData.name}</h2>
-                      <p className="text-slate-500 font-bold uppercase tracking-[0.4em] text-lg">{headerData.title}</p>
+                      <h2 className={`text-4xl md:text-6xl font-bold uppercase tracking-widest ${currentTheme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>{headerData.name}</h2>
+                      <p className={`font-bold uppercase tracking-[0.4em] text-lg ${currentTheme === 'light' ? 'text-slate-600' : 'text-slate-500'}`}>{headerData.title}</p>
                     </>
                   )}
                 </div>
               </div>
-              <button onClick={() => scroll('right')} className="px-12 py-5 bg-blue-600 rounded-2xl font-black uppercase text-xs tracking-widest shadow-2xl shadow-blue-600/30 hover:bg-blue-500 transition-all">Explore Works</button>
            </div>
-           <div className="relative z-10 hidden lg:block group">
-              <div className="w-[35rem] h-[35rem] rounded-[5rem] overflow-hidden border-[12px] border-slate-900 shadow-2xl relative bg-slate-900">
-                 {headerData.photo ? <img src={headerData.photo} className="w-full h-full object-cover" /> : <UserIcon size={120} className="text-slate-800 m-auto h-full" />}
+           <div className="relative z-10 hidden lg:block group ml-20">
+              <div className="w-[28rem] h-[28rem] rounded-[4rem] overflow-hidden border-[12px] border-slate-900 shadow-2xl relative bg-slate-900">
+                 {headerData.photo ? (
+                    <img 
+                      src={headerData.photo} 
+                      className="w-full h-full object-cover transition-all" 
+                      style={{ objectPosition: `50% ${headerData.photoPosition !== undefined ? headerData.photoPosition : 50}%` }}
+                    />
+                 ) : (
+                    <UserIcon size={120} className="text-slate-800 m-auto h-full" />
+                 )}
+                 
                  {isEditing && (
-                    <label className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center cursor-pointer transition-opacity backdrop-blur-sm">
-                      <Camera size={48} className="text-white mb-4" />
-                      <span className="text-white font-black uppercase text-xs tracking-widest">Change Photo</span>
-                      <input type="file" className="hidden" accept="image/*" onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => setHeaderData({...headerData, photo: reader.result});
-                          reader.readAsDataURL(file);
-                        }
-                      }} />
-                    </label>
+                    <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity backdrop-blur-sm gap-8">
+                      {/* Upload Button */}
+                      <label className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform mt-6">
+                        <Camera size={40} className="text-white mb-3" />
+                        <span className="text-white font-black uppercase text-xs tracking-widest bg-blue-600 px-4 py-2 rounded-full shadow-lg">Change Photo</span>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => setHeaderData({...headerData, photo: reader.result, photoPosition: 50});
+                            reader.readAsDataURL(file);
+                          }
+                        }} />
+                      </label>
+
+                      {/* Position Slider */}
+                      {headerData.photo && (
+                        <div className="flex flex-col items-center gap-3 w-3/4 bg-slate-900/50 p-4 rounded-2xl border border-slate-700 backdrop-blur-md" onClick={(e) => e.stopPropagation()}>
+                          <span className="text-white text-[10px] font-bold uppercase tracking-widest opacity-80">Vertical Align</span>
+                          <input 
+                            type="range" 
+                            min="0" max="100" 
+                            value={headerData.photoPosition !== undefined ? headerData.photoPosition : 50} 
+                            onChange={(e) => setHeaderData({...headerData, photoPosition: e.target.value})}
+                            className="w-full accent-blue-500 cursor-pointer"
+                          />
+                        </div>
+                      )}
+                    </div>
                  )}
               </div>
            </div>
         </div>
 
         {/* 2. PROJECT INDEX */}
-        <div className="min-w-full h-full snap-start flex-shrink-0 bg-slate-950 p-12 md:p-24 flex flex-col lg:flex-row">
-           <div className="hidden lg:flex flex-col justify-between py-12 pr-20 border-r border-slate-900 select-none">
-              <h3 className="text-[140px] font-black uppercase leading-[0.7] opacity-5 tracking-tighter [writing-mode:vertical-lr] rotate-180">Summary</h3>
-           </div>
-           <div className="flex-1 lg:pl-20 overflow-y-auto hide-scrollbar space-y-16">
-              <div className="flex justify-between items-end border-b border-slate-900 pb-12">
-                 <h3 className="text-7xl md:text-9xl font-black uppercase tracking-tighter text-white leading-none">Experience</h3>
-                 {isEditing && (
-                   <button onClick={handleAddProject} className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-xs uppercase shadow-xl">Add Project</button>
-                 )}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-                 <div className="space-y-6">
-                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.5em] block mb-8 opacity-50">Project Directory</span>
-                    {projects.map((project, index) => (
-                      <div key={index} onClick={() => scrollRef.current.scrollTo({ left: (index + 2) * scrollRef.current.clientWidth, behavior: 'smooth' })} className="group flex items-center justify-between p-6 rounded-3xl hover:bg-blue-600/10 border border-transparent hover:border-blue-500/20 transition-all cursor-pointer">
-                         <div className="flex items-center gap-6">
-                            <span className="text-xs font-black text-slate-700 italic group-hover:text-blue-500">{String(index + 1).padStart(2, '0')}</span>
-                            <span className="text-2xl font-black uppercase tracking-tight text-slate-300 group-hover:text-white transition-colors">{project.title}</span>
-                         </div>
-                         <ChevronRight size={20} className="text-slate-800 group-hover:text-blue-500 transition-all" />
+        <div className={`w-full h-full snap-start flex-shrink-0 p-12 md:p-24 flex flex-col lg:flex-row ${currentTheme === 'light' ? 'bg-white/20' : 'bg-transparent'}`}>
+            {/* LARGE VERTICAL TEXT */}
+            <div className="hidden lg:flex w-32 shrink-0 relative items-center justify-center z-10 overflow-hidden">
+               <h2 className={`text-[8rem] font-black tracking-tighter uppercase -rotate-90 whitespace-nowrap select-none ${currentTheme === 'light' ? 'text-slate-300' : 'text-slate-800/40'}`}>
+                 Project
+               </h2>
+            </div>
+            
+            {/* TIMELINE COLUMN */}
+            <div className={`hidden lg:flex w-24 flex-col items-center justify-between py-[4.5rem] shrink-0 z-10 ${currentTheme === 'light' ? 'text-slate-900' : 'text-slate-300'}`}>
+               {isEditing ? (
+                  <input value={headerData.timelineStart || '2026'} onChange={(e) => setHeaderData({...headerData, timelineStart: e.target.value})} className="text-2xl font-black bg-transparent w-16 text-center focus:outline-none" />
+               ) : (
+                  <span className="text-2xl font-black">{headerData.timelineStart || '2026'}</span>
+               )}
+               <div className={`flex-1 w-[1px] my-4 ${currentTheme === 'light' ? 'bg-slate-400' : 'bg-slate-700'}`}></div>
+               {isEditing ? (
+                  <input value={headerData.timelineEnd || '2019'} onChange={(e) => setHeaderData({...headerData, timelineEnd: e.target.value})} className="text-2xl font-black bg-transparent w-16 text-center focus:outline-none" />
+               ) : (
+                  <span className="text-2xl font-black">{headerData.timelineEnd || '2019'}</span>
+               )}
+            </div>
+            <div className="flex-1 lg:pl-20 pr-10 overflow-y-auto hide-scrollbar space-y-16">
+              {/* STICKY HEADER */}
+              <div className={`sticky top-4 z-30 pt-10 pb-8 border border-r-0 transition-all duration-500 rounded-l-[3rem] px-10 -mr-10 pr-20 mb-8 ${currentTheme === 'light' ? 'bg-[#f5f2ed]/80 border-slate-300' : 'bg-slate-950/95 border-slate-900'} backdrop-blur-md shadow-xl`}>
+                 <div className="flex justify-between items-end">
+                     <h3 className={`text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none ${currentTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>Experience</h3>
+                    {isEditing && (
+                      <div className="flex gap-4">
+                        {selectedIndices.length > 0 && (
+                          <button onClick={handleDeleteSelected} className="bg-red-600/20 text-red-500 border border-red-500/30 px-6 py-4 rounded-xl font-black text-xs uppercase shadow-xl hover:bg-red-600 hover:text-white transition-all flex items-center gap-2">
+                            <Trash2 size={16} /> Delete ({selectedIndices.length})
+                          </button>
+                        )}
+                        <button onClick={handleAddProject} className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-xs uppercase shadow-xl mr-4 hover:scale-105 transition-transform active:scale-95">Add Project</button>
                       </div>
-                    ))}
+                    )}
                  </div>
-                 <div className="space-y-6 hidden md:block opacity-40">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] block mb-8">Location</span>
-                    {projects.map((project, index) => (
-                      <div key={index} className="p-6 flex items-center h-[5.5rem]">
-                         <span className="text-base font-bold uppercase tracking-widest">{project.location}</span>
-                      </div>
-                    ))}
+              </div>
+
+              <div className="w-full">
+                 {/* Header Row */}
+                 <div className="mb-6 px-4">
+                    <span className="text-lg font-black text-blue-500 uppercase opacity-70">Project Directory</span>
+                 </div>
+
+                 {/* 2-Column Grid */}
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6">
+                 {projects.map((project, index) => (
+                    <div 
+                      key={index} 
+                      onClick={() => scrollRef.current.scrollTo({ left: (index + 2) * scrollRef.current.clientWidth, behavior: 'smooth' })} 
+                      className={`group flex items-center justify-between py-3 px-5 rounded-[1.5rem] border transition-all cursor-pointer ${selectedIndices.includes(index) ? 'bg-red-500/10 border-red-500/30' : 'hover:bg-blue-600/10 border-transparent hover:border-blue-500/20 bg-slate-900/5'}`}
+                    >
+                       <div className="flex items-center gap-4 overflow-hidden">
+                          {isEditing && (
+                            <div 
+                              onClick={(e) => toggleSelect(e, index)}
+                              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 ${selectedIndices.includes(index) ? 'bg-red-500 border-red-500 text-white' : 'border-slate-700 bg-slate-900 hover:border-red-500/50'}`}
+                            >
+                              {selectedIndices.includes(index) && <X size={12} />}
+                            </div>
+                          )}
+                          <span className="text-xs font-black text-slate-400 italic group-hover:text-blue-500 shrink-0">{String(index + 1).padStart(2, '0')}</span>
+                          <div className="flex flex-col overflow-hidden min-w-0">
+                             <span className={`text-lg md:text-xl font-black uppercase tracking-tight transition-colors truncate ${currentTheme === 'light' ? 'text-slate-800 group-hover:text-blue-600' : 'text-slate-300 group-hover:text-white'}`}>{project.title}</span>
+                             <span className={`text-[10px] md:text-xs font-bold uppercase tracking-widest truncate ${currentTheme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>{project.location}</span>
+                          </div>
+                       </div>
+                       
+                       {/* Arrow */}
+                       <ChevronRight size={18} className="text-slate-400 group-hover:text-blue-500 transition-all shrink-0 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 ml-2" />
+                    </div>
+                 ))}
                  </div>
               </div>
            </div>
@@ -152,54 +243,63 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
 
         {/* 3. PROJECT DETAIL PAGES - COMPACT SINGLE PAGE DESIGN */}
         {projects.map((project, index) => (
-          <div key={index} className="min-w-full h-full snap-start flex-shrink-0 bg-slate-950 flex flex-col overflow-hidden">
+          <div key={index} className="w-full h-full snap-start flex-shrink-0 flex flex-col overflow-hidden relative">
             
-            {/* Header Section (20% Height) */}
-            <div className="h-[20%] w-full px-12 md:px-24 flex items-center justify-between border-b border-slate-900 bg-slate-950/50 backdrop-blur-sm shrink-0">
+            {/* Header Section (Flexible Height) */}
+            <div className={`min-h-[160px] w-full px-12 md:px-24 flex items-center justify-between border-b transition-colors duration-500 shrink-0 ${currentTheme === 'light' ? 'bg-[#f5f2ed]/60 border-slate-300' : 'bg-slate-950/40 border-slate-900'} backdrop-blur-sm`}>
                <div className="flex items-center gap-8">
                   <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-black italic text-3xl shadow-xl shadow-blue-600/30 shrink-0">{String(index + 1).padStart(2, '0')}</div>
                   <div className="flex flex-col gap-1">
-                     <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em]">Role:</span>
-                        {isEditing ? (
-                           <input value={project.tool} onChange={(e) => updateProject(index, 'tool', e.target.value)} className="bg-transparent text-sm font-bold text-white uppercase focus:outline-none border-b border-slate-800" />
-                        ) : (
-                           <span className="text-sm font-bold text-white uppercase">{project.tool}</span>
-                        )}
-                     </div>
-                     {isEditing ? (
-                        <input value={project.title} onChange={(e) => updateProject(index, 'title', e.target.value)} className="text-4xl font-black uppercase tracking-tighter bg-transparent border-b border-slate-800 focus:outline-none w-[500px]" />
-                     ) : (
-                        <h3 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white truncate max-w-4xl">{project.title}</h3>
-                     )}
+
+                      <div className={`px-10 py-6 rounded-3xl border shadow-2xl transition-all duration-500 ${currentTheme === 'light' ? 'bg-[#f5f2ed] border-slate-300' : 'bg-slate-950/95 border-slate-900'}`}>
+                         {isEditing ? (
+                            <input value={project.title} onChange={(e) => updateProject(index, 'title', e.target.value)} className={`text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-tight bg-transparent focus:outline-none w-full ${currentTheme === 'light' ? 'text-slate-900' : 'text-slate-300'}`} />
+                         ) : (
+                            <h3 className={`text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-tight max-w-5xl ${currentTheme === 'light' ? 'text-slate-900' : 'text-slate-300'}`}>{project.title}</h3>
+                         )}
+                      </div>
                   </div>
                </div>
-               <div className="flex gap-8">
-                  <div className="flex flex-col items-end">
-                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Location</span>
-                     <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
-                        <MapPin size={14} className="text-blue-500" />
-                        {isEditing ? <input value={project.location} onChange={(e) => updateProject(index, 'location', e.target.value)} className="bg-transparent border-b border-slate-800 w-32 focus:outline-none" /> : project.location}
-                     </div>
-                  </div>
-                  <div className="flex flex-col items-end">
-                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Year</span>
-                     <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
-                        <Calendar size={14} className="text-blue-500" />
-                        {isEditing ? <input value={project.year} onChange={(e) => updateProject(index, 'year', e.target.value)} className="bg-transparent border-b border-slate-800 w-20 focus:outline-none" /> : project.year}
-                     </div>
-                  </div>
-               </div>
+               
+               <div className="flex items-center gap-12">
+                   {/* QUICK RETURN TO INDEX */}
+                   <button 
+                      onClick={() => scrollRef.current.scrollTo({ left: scrollRef.current.clientWidth, behavior: 'smooth' })}
+                      className="px-6 py-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2 group shadow-xl shrink-0"
+                   >
+                      <Layers size={14} className="group-hover:rotate-12 transition-transform" />
+                      Back to Index
+                   </button>
+
+                   <div className="flex gap-8 shrink-0">
+                      <div className="flex flex-col items-end">
+                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Location</span>
+                         <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
+                            <MapPin size={14} className="text-blue-500" />
+                            {isEditing ? <input value={project.location} onChange={(e) => updateProject(index, 'location', e.target.value)} className="bg-transparent border-b border-slate-800 w-32 focus:outline-none" /> : project.location}
+                         </div>
+                      </div>
+                      <div className="flex flex-col items-end">
+                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Year</span>
+                         <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
+                            <Calendar size={14} className="text-blue-500" />
+                            {isEditing ? <input value={project.year} onChange={(e) => updateProject(index, 'year', e.target.value)} className="bg-transparent border-b border-slate-800 w-20 focus:outline-none" /> : project.year}
+                         </div>
+                      </div>
+                   </div>
+                </div>
             </div>
 
             {/* Content Section (80% Height) */}
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                
-               {/* Left Side: Description + Competencies (40% Width) */}
-               <div className="w-full md:w-[40%] flex flex-col p-12 md:p-20 border-r border-slate-900 bg-slate-950/20 overflow-y-auto hide-scrollbar shrink-0">
+               {/* Left Side: Description + Competencies (25% Width) */}
+               <div className="w-full md:w-[25%] flex flex-col p-10 border-r border-slate-900 bg-slate-950/20 overflow-y-auto hide-scrollbar shrink-0">
                   <div className="space-y-12">
                      <div className="space-y-6">
-                        <div className="flex items-center gap-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-50"><Info size={16} className="text-blue-500"/> Project Narrative</div>
+                        <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border font-black uppercase tracking-widest text-[11px] shadow-sm transition-colors ${currentTheme === 'light' ? 'bg-[#f5f2ed] border-slate-300 text-slate-800' : 'bg-slate-900 border-slate-800 text-slate-300'}`}>
+                           <Info size={16} className="text-blue-600"/> Project Narrative
+                        </div>
                         {isEditing ? (
                           <textarea value={project.desc} onChange={(e) => updateProject(index, 'desc', e.target.value)} className="w-full bg-slate-900/30 border border-slate-800 rounded-3xl p-6 text-sm text-slate-400 focus:outline-none min-h-[300px] leading-relaxed" />
                         ) : (
@@ -208,7 +308,9 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
                      </div>
 
                      <div className="pt-10 border-t border-slate-900/50 space-y-6">
-                        <div className="flex items-center gap-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-50"><Layers size={16} className="text-blue-500"/> Coordination Scope</div>
+                        <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border font-black uppercase tracking-widest text-[11px] shadow-sm transition-colors ${currentTheme === 'light' ? 'bg-[#f5f2ed] border-slate-300 text-slate-800' : 'bg-slate-900 border-slate-800 text-slate-300'}`}>
+                           <Layers size={16} className="text-blue-600"/> Coordination Scope
+                        </div>
                         <div className="flex flex-wrap gap-2">
                            {["BIM COORDINATION", "STRUCTURAL MODELING", "CLASH DETECTION", "SHOP DRAWING"].map(tag => (
                               <span key={tag} className="text-[10px] font-bold text-slate-500 border border-slate-800 px-4 py-2 rounded-full uppercase tracking-tighter bg-slate-900/20">{tag}</span>
@@ -224,69 +326,64 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
                   </div>
                </div>
 
-               {/* Right Side: Main Image + Gallery (60% Width) */}
-               <div className="w-full md:w-[60%] flex flex-col p-8 md:p-12 gap-8 overflow-hidden bg-slate-900/10">
+               {/* Right Side: 5-Image Grid (75% Width) */}
+               <div className="w-full md:w-[75%] flex flex-col p-8 md:p-12 gap-8 overflow-hidden bg-slate-900/10">
                   
-                  {/* Main Render Area (Large) */}
-                  <div className="flex-[3] relative bg-slate-900 rounded-[3rem] overflow-hidden border border-slate-800 shadow-2xl group shrink-0">
-                     {project.image ? (
-                        <img src={project.image} className="w-full h-full object-cover" />
-                     ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center opacity-10">
-                           <ImageIcon size={80} />
-                           <span className="text-[10px] font-black uppercase tracking-widest mt-4">Cinematic Project Visualization</span>
-                        </div>
-                     )}
-                     {isEditing && (
-                        <label className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center cursor-pointer transition-all backdrop-blur-sm">
-                           <Camera size={48} className="text-white mb-4" />
-                           <span className="text-white font-black uppercase text-[10px] tracking-widest">Update Render</span>
-                           <input type="file" className="hidden" accept="image/*" onChange={(e) => {
-                             const file = e.target.files[0];
-                             if (file) {
-                               const reader = new FileReader();
-                               reader.onloadend = () => updateProject(index, 'image', reader.result);
-                               reader.readAsDataURL(file);
-                             }
-                           }} />
-                        </label>
-                     )}
-                  </div>
-
-                  {/* Gallery Grid Area (Compact) */}
-                  <div className="flex-1 flex flex-col gap-4 min-h-[150px] overflow-hidden shrink-0">
-                     <div className="flex justify-between items-center px-4">
-                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">Integrated Gallery ({project.gallery?.length || 0})</span>
-                     </div>
-                     <div className="flex-1 overflow-y-auto hide-scrollbar px-2">
-                        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 pb-4">
-                           {(project.gallery || []).map((img, imgIdx) => (
-                             <div key={imgIdx} className="relative aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-800 group">
-                               <img src={img} className="w-full h-full object-cover" />
-                               {isEditing && (
-                                 <button onClick={() => removeImageFromGallery(index, imgIdx)} className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                                   <X size={10} />
-                                 </button>
-                               )}
-                             </div>
-                           ))}
-                           {isEditing && (
-                             <label className="aspect-video border-2 border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group">
-                               <Plus className="text-slate-700 group-hover:text-blue-500" size={20} />
-                               <input type="file" className="hidden" accept="image/*" multiple onChange={(e) => {
-                                  const files = Array.from(e.target.files);
-                                  files.forEach(file => {
+                  {/* 5-Image Grid System */}
+                  <div className="grid grid-cols-3 grid-rows-2 gap-6 flex-1 min-h-0">
+                     {/* 1. Large Vertical Image (Left) */}
+                     <div className={`row-span-2 rounded-[2.5rem] overflow-hidden border transition-all duration-500 relative group ${project.image ? 'bg-slate-900' : (currentTheme === 'light' ? 'bg-black/5 border-slate-300 border-dashed' : 'bg-slate-900/40 border-slate-800')} shadow-2xl`}>
+                        {project.image ? (
+                           <img src={project.image} className="w-full h-full object-cover" />
+                        ) : (
+                           <div className="w-full h-full flex flex-col items-center justify-center opacity-20"><ImageIcon size={48} /></div>
+                        )}
+                        {isEditing && (
+                           <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center cursor-pointer transition-opacity backdrop-blur-sm">
+                              <Plus className="text-white mb-2" size={32} />
+                              <span className="text-[10px] font-bold text-white uppercase">Main View</span>
+                              <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                                 const file = e.target.files[0];
+                                 if (file) {
                                     const reader = new FileReader();
-                                    reader.onloadend = () => addImageToGallery(index, reader.result);
+                                    reader.onloadend = () => updateProject(index, 'image', reader.result);
                                     reader.readAsDataURL(file);
-                                  });
-                               }} />
-                             </label>
-                           )}
-                        </div>
+                                 }
+                              }} />
+                           </label>
+                        )}
                      </div>
-                  </div>
-               </div>
+
+                      {/* 2-5. Grid Images (Right) */}
+                      {[0, 1, 2, 3].map(gi => (
+                          <div key={gi} className={`rounded-[2rem] overflow-hidden border transition-all duration-500 relative group ${project.gallery && project.gallery[gi] ? 'bg-slate-900' : (currentTheme === 'light' ? 'bg-black/5 border-slate-300 border-dashed' : 'bg-slate-900/40 border-slate-800')} shadow-xl`}>
+                            {project.gallery && project.gallery[gi] ? (
+                               <img src={project.gallery[gi]} className="w-full h-full object-cover" />
+                            ) : (
+                               <div className="w-full h-full flex flex-col items-center justify-center opacity-10"><ImageIcon size={32} /></div>
+                            )}
+                            {isEditing && (
+                               <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center cursor-pointer transition-opacity backdrop-blur-sm">
+                                  <Plus className="text-white mb-1" size={24} />
+                                  <span className="text-[8px] font-bold text-white uppercase">Add Image</span>
+                                  <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                                     const file = e.target.files[0];
+                                     if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                           const newGallery = [...(project.gallery || [])];
+                                           newGallery[gi] = reader.result;
+                                           updateProject(index, 'gallery', newGallery);
+                                        };
+                                        reader.readAsDataURL(file);
+                                     }
+                                  }} />
+                               </label>
+                            )}
+                         </div>
+                      ))}
+                   </div>
+                </div>
 
             </div>
           </div>

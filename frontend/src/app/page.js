@@ -80,13 +80,16 @@ export default function BIMPortfolio() {
     try {
       const profile = await profileApi.getMe();
       if (profile) {
-        setHeaderData({
+        const newHeaderData = {
           name: user.full_name || "Nguyen Thanh Nhan",
           title: profile.title || "Senior BIM Engineer & Coordinator",
           careerGoals: profile.career_goals || INITIAL_CV_DATA.careerGoals,
           photo: profile.photo
-        });
-        setCvData({
+        };
+        setHeaderData(newHeaderData);
+        localStorage.setItem("headerData", JSON.stringify(newHeaderData));
+
+        const newCvData = {
           contact: { 
             email: profile.email || INITIAL_CV_DATA.contact.email, 
             phone: profile.phone || INITIAL_CV_DATA.contact.phone, 
@@ -99,13 +102,19 @@ export default function BIMPortfolio() {
           experience: JSON.parse(profile.experience || "[]"),
           languages: JSON.parse(profile.languages || "[]"),
           certificates: JSON.parse(profile.certificates || "[]")
-        });
+        };
+        setCvData(newCvData);
+        localStorage.setItem("cvData", JSON.stringify(newCvData));
       }
 
       const projects = await projectApi.getProjects();
       if (projects && projects.length > 0) {
-        setPersonalProjects(projects.filter(p => !p.is_team_project).map(mapProjectFromApi));
-        setTeamProjects(projects.filter(p => p.is_team_project).map(mapProjectFromApi));
+        const pProjects = projects.filter(p => !p.is_team_project).map(mapProjectFromApi);
+        const tProjects = projects.filter(p => p.is_team_project).map(mapProjectFromApi);
+        setPersonalProjects(pProjects);
+        setTeamProjects(tProjects);
+        localStorage.setItem("personalProjects", JSON.stringify(pProjects));
+        localStorage.setItem("teamProjects", JSON.stringify(tProjects));
       }
     } catch (err) {
       console.error("Failed to load from API", err);
@@ -134,11 +143,13 @@ export default function BIMPortfolio() {
   });
 
   const handleSave = async () => {
+    // ALWAYS save to local storage so the public (logged out) view is updated instantly on this browser
+    localStorage.setItem("personalProjects", JSON.stringify(personalProjects));
+    localStorage.setItem("teamProjects", JSON.stringify(teamProjects));
+    localStorage.setItem("headerData", JSON.stringify(headerData));
+    localStorage.setItem("cvData", JSON.stringify(cvData));
+
     if (!user) {
-      localStorage.setItem("personalProjects", JSON.stringify(personalProjects));
-      localStorage.setItem("teamProjects", JSON.stringify(teamProjects));
-      localStorage.setItem("headerData", JSON.stringify(headerData));
-      localStorage.setItem("cvData", JSON.stringify(cvData));
       setIsEditing(false);
       alert("Saved locally! Login to sync with the cloud.");
       return;
@@ -225,7 +236,7 @@ export default function BIMPortfolio() {
   if (authLoading) return <div className="h-screen w-full flex items-center justify-center bg-slate-950"><Loader2 className="animate-spin text-blue-500" size={48} /></div>;
 
   return (
-    <div className={`min-h-screen transition-all duration-500 selection:bg-blue-500/30 flex ${activeTab === 'cv' ? 'font-cv' : 'font-portfolio'} ${THEMES[currentTheme].class} ${currentTheme === 'light' ? 'text-slate-900' : 'text-slate-100'}`}>
+    <div className={`h-screen w-full overflow-hidden transition-all duration-500 selection:bg-blue-500/30 flex ${activeTab === 'cv' ? 'font-cv' : 'font-portfolio'} ${THEMES[currentTheme].class} ${currentTheme === 'light' ? 'text-slate-900' : 'text-slate-100'}`}>
       
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
 
@@ -268,28 +279,60 @@ export default function BIMPortfolio() {
           ))}
         </div>
 
-        <div className="mt-auto flex flex-col gap-4 pb-4">
-          <button onClick={handleExport} className="p-3 text-slate-500 hover:text-blue-500 transition-all" title="Download PDF"><Download size={20} /></button>
+        {/* Sidebar Actions (Bottom) */}
+        <div className="mt-auto flex flex-col gap-3 pb-8 w-full px-3">
+          
+          {/* EDIT BUTTON: ONLY appears when logged in and is placed ABOVE Export */}
+          {user && (
+            <button 
+              onClick={isEditing ? handleSave : () => setIsEditing(true)}
+              className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all group shadow-lg ${
+                isEditing 
+                  ? "bg-emerald-600 text-white shadow-emerald-600/30" 
+                  : currentTheme === 'light' ? "bg-slate-100 text-slate-900 hover:bg-emerald-500 hover:text-white" : "bg-slate-900 text-slate-300 hover:bg-emerald-600 hover:text-white"
+              }`}
+              disabled={syncing}
+            >
+              {syncing ? <Loader2 className="animate-spin" size={20} /> : (isEditing ? <Save size={20} className="group-hover:scale-110 transition-transform" /> : <Edit3 size={20} className="group-hover:scale-110 transition-transform" />)}
+              <span className="text-[8px] font-black uppercase tracking-tighter">{isEditing ? "Save" : "Edit"}</span>
+            </button>
+          )}
 
+          {/* EXPORT BUTTON: Always visible */}
+          <button 
+            onClick={handleExport} 
+            className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all group ${currentTheme === 'light' ? 'hover:bg-blue-50 text-slate-400 hover:text-blue-600' : 'hover:bg-blue-500/10 text-slate-500 hover:text-blue-400'}`}
+            title="Download PDF"
+          >
+            <Download size={22} className="group-hover:scale-110 transition-transform" />
+            <span className="text-[8px] font-black uppercase tracking-tighter">Export</span>
+          </button>
+
+          {/* LOGIN / LOGOUT BUTTON: Toggles based on auth state */}
           {user ? (
-            <>
-              <button 
-                onClick={isEditing ? handleSave : () => setIsEditing(true)}
-                className={`p-3 rounded-xl transition-all ${isEditing ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20" : "text-slate-500 hover:text-emerald-400 hover:bg-slate-800"}`}
-                disabled={syncing}
-              >
-                {syncing ? <Loader2 className="animate-spin" size={20} /> : (isEditing ? <Save size={20} /> : <Edit3 size={20} />)}
-              </button>
-              <button onClick={logout} className="p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all" title="Logout"><LogOut size={20} /></button>
-            </>
+            <button 
+              onClick={logout} 
+              className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all group ${currentTheme === 'light' ? 'bg-slate-100 text-red-500 hover:bg-red-500 hover:text-white' : 'bg-slate-900 text-red-400 hover:bg-red-600 hover:text-white'}`}
+              title="Logout"
+            >
+              <LogOut size={20} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[8px] font-black uppercase tracking-tighter">Logout</span>
+            </button>
           ) : (
-             <button onClick={() => setIsLoginOpen(true)} className="p-3 text-slate-500 hover:text-blue-500 transition-all" title="Admin Login"><LogIn size={20} /></button>
+            <button 
+              onClick={() => setIsLoginOpen(true)} 
+              className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all group ${currentTheme === 'light' ? 'bg-slate-100 text-slate-900 hover:bg-blue-600 hover:text-white' : 'bg-slate-900 text-slate-300 hover:bg-blue-600 hover:text-white'}`}
+              title="Admin Login"
+            >
+              <LogIn size={20} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[8px] font-black uppercase tracking-tighter">Login</span>
+            </button>
           )}
         </div>
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 ml-20 md:ml-24">
+      <main className="flex-1 ml-20 md:ml-24 h-full overflow-y-auto custom-scrollbar">
         <div className="max-w-6xl mx-auto px-4 md:px-8 py-12">
           
           <AnimatePresence>
@@ -331,15 +374,12 @@ export default function BIMPortfolio() {
           <div className="min-h-[700px]">
             <AnimatePresence mode="wait">
               {activeTab === "cv" && <CVTab key="cv" isEditing={isEditing} currentTheme={currentTheme} data={cvData} updateField={(cat, val) => setCvData(prev => ({ ...prev, [cat]: val }))} />}
-              {activeTab === "personal" && <PersonalPortfolioTab key="personal" activeTab={activeTab} headerData={headerData} projects={personalProjects} setProjects={setPersonalProjects} isEditing={isEditing} currentTheme={currentTheme} />}
+              {activeTab === "personal" && <PersonalPortfolioTab key="personal" activeTab={activeTab} headerData={headerData} setHeaderData={setHeaderData} projects={personalProjects} setProjects={setPersonalProjects} isEditing={isEditing} currentTheme={currentTheme} />}
               {activeTab === "team" && <TeamPortfolioTab key="team" projects={teamProjects} setProjects={setTeamProjects} isEditing={isEditing} currentTheme={currentTheme} />}
             </AnimatePresence>
           </div>
 
-          <footer className="mt-20 pt-10 border-t border-slate-800/50 text-center space-y-2">
-            <p className="text-slate-500 font-bold uppercase tracking-[0.4em] text-[10px]">BIM Portfolio Platform • Professional Excellence</p>
-            <p className="text-slate-700 text-[9px] font-medium uppercase tracking-widest">© 2026 Developed for Nguyen Thanh Nhan</p>
-          </footer>
+
         </div>
       </main>
     </div>

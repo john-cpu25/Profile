@@ -45,6 +45,13 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
 }
 
 :root {
@@ -89,8 +96,21 @@ body {
 }
 
 .bg-light-theme {
-  background: radial-gradient(circle at 0% 0%, #ffffff 0%, #f1f5f9 100%);
+  background-color: #f4f1ea;
+  background-image: 
+    linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+    url('https://www.transparenttextures.com/patterns/felt.png');
   background-attachment: fixed;
+  position: relative;
+}
+
+.bg-light-theme::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%);
+  pointer-events: none;
+  z-index: 10;
 }
 
 @keyframes gradient {

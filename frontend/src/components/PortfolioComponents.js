@@ -33,8 +33,7 @@ export function ContactLine({ icon: Icon, value, isEditing, onChange, label, cur
           />
         ) : (
           <div className="flex flex-col">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter leading-tight">{label}</span>
-            <span className={`text-[11px] font-bold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>{value}</span>
+            <span className={`text-[13px] font-bold ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>{value}</span>
           </div>
         )}
       </div>
@@ -42,9 +41,19 @@ export function ContactLine({ icon: Icon, value, isEditing, onChange, label, cur
   );
 }
 
-export function EditableField({ value, isEditing, onChange, className, currentTheme, placeholder }) {
+export function EditableField({ value, isEditing, onChange, className, currentTheme, placeholder, type = "text" }) {
   const isLight = currentTheme === 'light';
   if (isEditing) {
+    if (type === "textarea") {
+      return (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`bg-transparent border border-blue-500/30 rounded-xl p-3 focus:border-blue-500 focus:outline-none w-full min-h-[100px] ${className}`}
+          placeholder={placeholder}
+        />
+      );
+    }
     return (
       <input
         type="text"
@@ -58,7 +67,9 @@ export function EditableField({ value, isEditing, onChange, className, currentTh
   return <span className={className}>{value}</span>;
 }
 
-export function EditableList({ items, isEditing, onChange, currentTheme }) {
+import { Plus, X } from "lucide-react";
+
+export function EditableList({ items, isEditing, onChange, currentTheme, placeholder = "Add item..." }) {
   const isLight = currentTheme === 'light';
   
   const handleItemChange = (index, newValue) => {
@@ -67,16 +78,33 @@ export function EditableList({ items, isEditing, onChange, currentTheme }) {
     onChange(newItems);
   };
 
+  const removeItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    onChange(newItems);
+  };
+
+  const addItem = () => {
+    onChange([...items, ""]);
+  };
+
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-1.5 items-center">
       {items.map((item, i) => (
-        <div key={i} className="relative group">
+        <div key={i} className="relative group flex items-center">
           {isEditing ? (
-            <input
-              value={item}
-              onChange={(e) => handleItemChange(i, e.target.value)}
-              className={`text-[10px] font-bold px-2 py-1 rounded-md border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'} focus:outline-none focus:border-blue-500`}
-            />
+            <div className="flex items-center gap-1">
+              <input
+                value={item}
+                onChange={(e) => handleItemChange(i, e.target.value)}
+                className={`text-[10px] font-bold px-2 py-1 rounded-md border ${isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-slate-900 border-slate-800 text-slate-300'} focus:outline-none focus:border-blue-500 w-24`}
+              />
+              <button 
+                onClick={() => removeItem(i)}
+                className="p-1 rounded-full hover:bg-red-500/20 text-red-500 transition-colors no-print"
+              >
+                <X size={10} />
+              </button>
+            </div>
           ) : (
             <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${isLight ? 'bg-slate-100 text-slate-600' : 'bg-slate-800/50 text-slate-400'}`}>
               {item}
@@ -84,6 +112,15 @@ export function EditableList({ items, isEditing, onChange, currentTheme }) {
           )}
         </div>
       ))}
+      {isEditing && (
+        <button 
+          onClick={addItem}
+          className="p-1.5 rounded-md border border-dashed border-slate-700 text-slate-500 hover:text-blue-500 hover:border-blue-500 transition-all flex items-center gap-1 text-[10px] font-bold no-print"
+        >
+          <Plus size={10} />
+          Add
+        </button>
+      )}
     </div>
   );
 }

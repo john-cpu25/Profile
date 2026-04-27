@@ -54,6 +54,7 @@ export default function BIMPortfolio() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentTheme, setCurrentTheme] = useState("midnight");
   const [syncing, setSyncing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const fileInputRef = useRef(null);
 
   // Central State
@@ -214,23 +215,136 @@ export default function BIMPortfolio() {
     }
   };
 
-  const handleExport = () => {
-    setActiveTab("cv");
-    setTimeout(() => {
-      const element = document.querySelector('main');
-      if (!element || !window.html2pdf) {
-        window.print();
-        return;
-      }
-      const opt = {
-        margin: [5, 5, 5, 5],
-        filename: `${headerData.name.replace(/\s+/g, '_')}_CV.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  /**
+   * Giải pháp "System-Level Interception": Đánh chặn toàn bộ yêu cầu lấy style của trình duyệt
+   * Đảm bảo html2canvas không bao giờ nhìn thấy mã màu oklch/oklab
+   */
+  const handleExport = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+
+    // Lưu lại hàm gốc để khôi phục sau
+    const originalGetPropertyValue = CSSStyleDeclaration.prototype.getPropertyValue;
+
+    try {
+      const element = document.getElementById('cv-content');
+      if (!element) throw new Error('Không tìm thấy nội dung CV');
+
+      // Helper: Convert màu sắc sang RGB (Dùng Canvas để trình duyệt tự giải mã)
+      const toRgb = (color) => {
+        if (!color || color === 'transparent' || color === 'none') return color;
+        if (color.includes('gradient') || color.includes('url')) return color;
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = canvas.height = 1;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = color;
+          ctx.fillRect(0, 0, 1, 1);
+          const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+          return a === 255 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${(a/255).toFixed(2)})`;
+        } catch (e) { return color; }
       };
-      window.html2pdf().set(opt).from(element).save();
-    }, 500);
+
+      // --- BƯỚC 1: ĐÁNH CHẶN HỆ THỐNG ---
+      // Ghi đè prototype để trả về RGB cho bất kỳ yêu cầu nào chứa oklch/oklab
+      CSSStyleDeclaration.prototype.getPropertyValue = function(prop) {
+        const val = originalGetPropertyValue.call(this, prop);
+        if (typeof val === 'string' && (val.includes('oklch') || val.includes('lab') || val.includes('oklab'))) {
+          return val.replace(/(oklch|lab|oklab)\([^)]+\)/g, (match) => toRgb(match));
+        }
+        return val;
+      };
+
+      // --- BƯỚC 2: CHUẨN BỊ BẢN CLONE VỚI STYLE INLINE ---
+      const clone = element.cloneNode(true);
+      
+      // Danh sách các thuộc tính Layout & Hiển thị quan trọng
+      const propsToCapture = [
+        'display', 'position', 'flex-direction', 'align-items', 'justify-content',
+        'width', 'height', 'padding', 'margin', 'font-size', 'font-weight', 'font-family',
+        'line-height', 'text-align', 'border-radius', 'background-color', 'color',
+        'border-width', 'border-style', 'border-color', 'fill', 'stroke', 'gap'
+      ];
+
+      const allElements = [clone, ...clone.querySelectorAll('*')];
+      allElements.forEach(el => {
+        if (el.nodeType !== 1) return;
+        
+        const cs = window.getComputedStyle(el);
+        const inlineStyles = {};
+        
+        propsToCapture.forEach(prop => {
+          // getPropertyValue lúc này đã được chúng ta patch ở trên
+          inlineStyles[prop] = cs.getPropertyValue(prop);
+        });
+
+        // Áp dụng inline style và xóa sạch Class/ID để cô lập hoàn toàn
+        el.removeAttribute('class');
+        Object.keys(inlineStyles).forEach(key => {
+          el.style.setProperty(key, inlineStyles[key], 'important');
+        });
+
+        // Xử lý background-image (gradients)
+        const bgImg = cs.getPropertyValue('background-image');
+        if (bgImg && bgImg !== 'none') {
+           el.style.setProperty('background-image', bgImg, 'important');
+        }
+
+        // Loại bỏ các hiệu ứng không tương thích
+        el.style.setProperty('backdrop-filter', 'none', 'important');
+        el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        el.style.setProperty('box-shadow', 'none', 'important');
+        el.style.setProperty('animation', 'none', 'important');
+        el.style.setProperty('transition', 'none', 'important');
+      });
+
+      // --- BƯỚC 3: CÁCH LY TUYỆT ĐỐI (PURGE CSS) ---
+      const container = document.createElement('div');
+      container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 210mm; background: white;';
+      
+      // Xóa bỏ các nút bấm và thành phần rác
+      clone.querySelectorAll('.no-print, button, input').forEach(el => el.remove());
+      clone.style.cssText = 'width: 210mm; margin: 0; padding: 0; background: white;';
+      
+      container.appendChild(clone);
+      document.body.appendChild(container);
+
+      // Đợi font và ảnh
+      await document.fonts.ready;
+      await new Promise(r => setTimeout(r, 800));
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `CV_Profile_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { 
+          scale: 3, 
+          useCORS: true, 
+          logging: false, 
+          backgroundColor: '#ffffff',
+          // onclone cực kỳ quan trọng để dọn dẹp CSS lần cuối
+          onclone: (clonedDoc) => {
+            clonedDoc.querySelectorAll('style, link[rel="stylesheet"]').forEach(s => s.remove());
+          }
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+      };
+
+      // Thực thi và lưu file
+      await window.html2pdf().set(opt).from(clone).save();
+
+      // --- BƯỚC 4: DỌN DẸP VÀ KHÔI PHỤC ---
+      document.body.removeChild(container);
+      alert('✅ Bản in PDF đã được tải xuống thành công!');
+
+    } catch (error) {
+      console.error('PDF Export Error:', error);
+      alert(`❌ Lỗi xuất PDF: ${error.message}`);
+    } finally {
+      // KHÔI PHỤC HÀM HỆ THỐNG NGAY LẬP TỨC
+      CSSStyleDeclaration.prototype.getPropertyValue = originalGetPropertyValue;
+      setIsExporting(false);
+    }
   };
 
   if (authLoading) return <div className="h-screen w-full flex items-center justify-center bg-slate-950"><Loader2 className="animate-spin text-blue-500" size={48} /></div>;
@@ -248,7 +362,6 @@ export default function BIMPortfolio() {
 
         <nav className="flex flex-col gap-4">
           {[
-            { id: "cv", icon: FileText, label: "CV" },
             { id: "personal", icon: UserIcon, label: "Works" },
             { id: "team", icon: Users, label: "Team" },
           ].map((tab) => (
@@ -333,47 +446,10 @@ export default function BIMPortfolio() {
 
       {/* MAIN CONTENT */}
       <main className="flex-1 ml-20 md:ml-24 h-full overflow-y-auto custom-scrollbar">
-        <div className="max-w-6xl mx-auto px-4 md:px-8 py-12">
+        <div id="cv-content" className="max-w-6xl mx-auto px-4 md:px-8 py-12">
           
-          <AnimatePresence>
-            {activeTab === "cv" && (
-              <motion.header 
-                initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                className="glass-dark rounded-[2.5rem] p-8 md:p-12 mb-12 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden shadow-2xl border-slate-800/50"
-              >
-                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
-                
-                <div className="relative group/photo">
-                  <div className={`w-36 h-36 md:w-44 md:h-44 rounded-[2rem] overflow-hidden bg-slate-800 flex items-center justify-center relative z-10 border-2 border-slate-700/50 shadow-2xl ${isEditing ? 'cursor-pointer hover:border-blue-500 transition-all' : ''}`} onClick={() => isEditing && fileInputRef.current.click()}>
-                    {headerData.photo ? <img src={headerData.photo} alt="Profile" className="w-full h-full object-cover" /> : <div className="flex flex-col items-center"><span className="text-4xl font-black text-slate-600">BIM</span></div>}
-                    {isEditing && <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition-opacity"><Camera className="text-white" size={32} /></div>}
-                  </div>
-                  {isEditing && <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />}
-                </div>
-
-                <div className="flex-1 text-center md:text-left z-10 space-y-4">
-                  {isEditing ? (
-                    <div className="space-y-4">
-                      <input value={headerData.name} onChange={(e) => setHeaderData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-3 text-4xl font-black text-white focus:outline-none focus:border-blue-500" />
-                      <input value={headerData.title} onChange={(e) => setHeaderData(prev => ({ ...prev, title: e.target.value }))} className="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-3 text-xl font-bold text-blue-400 focus:outline-none focus:border-blue-500" />
-                      <textarea value={headerData.careerGoals} onChange={(e) => setHeaderData(prev => ({ ...prev, careerGoals: e.target.value }))} className="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-3 text-sm text-slate-400 focus:outline-none focus:border-blue-500 min-h-[100px] resize-none" />
-                    </div>
-                  ) : (
-                    <>
-                      <h1 className="text-5xl md:text-6xl font-black tracking-tighter uppercase leading-none">{headerData.name}</h1>
-                      <h2 className="text-xl md:text-2xl text-gradient font-black uppercase tracking-widest">{headerData.title}</h2>
-                      <p className="text-slate-400 text-sm md:text-base max-w-3xl italic leading-relaxed pl-6 border-l-2 border-blue-500/30">"{headerData.careerGoals}"</p>
-                    </>
-                  )}
-                </div>
-                {user && <div className="absolute top-6 right-6 flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full no-print"><div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /><span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Logged In as {user.username}</span></div>}
-              </motion.header>
-            )}
-          </AnimatePresence>
-
           <div className="min-h-[700px]">
             <AnimatePresence mode="wait">
-              {activeTab === "cv" && <CVTab key="cv" isEditing={isEditing} currentTheme={currentTheme} data={cvData} updateField={(cat, val) => setCvData(prev => ({ ...prev, [cat]: val }))} />}
               {activeTab === "personal" && <PersonalPortfolioTab key="personal" activeTab={activeTab} headerData={headerData} setHeaderData={setHeaderData} projects={personalProjects} setProjects={setPersonalProjects} isEditing={isEditing} currentTheme={currentTheme} />}
               {activeTab === "team" && <TeamPortfolioTab key="team" projects={teamProjects} setProjects={setTeamProjects} isEditing={isEditing} currentTheme={currentTheme} />}
             </AnimatePresence>

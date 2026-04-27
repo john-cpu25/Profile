@@ -234,6 +234,10 @@ body {
   .experience-item {
     page-break-inside: avoid;
   }
+
+  .no-print {
+    display: none !important;
+  }
 }
 
 /* PORTFOLIO BOOK STYLES */

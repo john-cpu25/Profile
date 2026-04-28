@@ -356,8 +356,28 @@ export default function BIMPortfolio() {
 
       {/* SIDEBAR */}
       <aside className={`w-20 md:w-24 border-r flex flex-col items-center py-8 gap-8 fixed h-screen z-50 transition-colors ${currentTheme === 'light' ? 'bg-white/80 border-slate-200 shadow-xl' : 'bg-slate-950/80 border-slate-800 backdrop-blur-md'}`}>
-        <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 mb-4">
-          <Sparkles className="text-white" size={24} />
+        
+        {/* LOGIN / LOGOUT BUTTON (Top) */}
+        <div className="w-full px-3 mb-2">
+          {user ? (
+            <button 
+              onClick={logout} 
+              className={`w-full py-4 rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center gap-1 transition-all group shadow-xl ${currentTheme === 'light' ? 'bg-slate-100 text-red-500 hover:bg-red-500 hover:text-white' : 'bg-slate-900 text-red-400 hover:bg-red-600 hover:text-white'}`}
+              title="Logout"
+            >
+              <LogOut size={20} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[8px] font-black uppercase tracking-tighter">Logout</span>
+            </button>
+          ) : (
+            <button 
+              onClick={() => setIsLoginOpen(true)} 
+              className={`w-full py-5 rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center gap-1 transition-all group shadow-2xl border border-blue-500/20 ${currentTheme === 'light' ? 'bg-white text-blue-600 hover:bg-blue-600 hover:text-white' : 'bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white shadow-blue-500/10'}`}
+              title="Admin Login"
+            >
+              <LogIn size={22} className="group-hover:translate-x-0.5 transition-transform" />
+              <span className="text-[9px] font-black uppercase tracking-widest mt-1">LOGIN</span>
+            </button>
+          )}
         </div>
 
         <nav className="flex flex-col gap-4">
@@ -420,27 +440,6 @@ export default function BIMPortfolio() {
             <Download size={22} className="group-hover:scale-110 transition-transform" />
             <span className="text-[8px] font-black uppercase tracking-tighter">Export</span>
           </button>
-
-          {/* LOGIN / LOGOUT BUTTON: Toggles based on auth state */}
-          {user ? (
-            <button 
-              onClick={logout} 
-              className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all group ${currentTheme === 'light' ? 'bg-slate-100 text-red-500 hover:bg-red-500 hover:text-white' : 'bg-slate-900 text-red-400 hover:bg-red-600 hover:text-white'}`}
-              title="Logout"
-            >
-              <LogOut size={20} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[8px] font-black uppercase tracking-tighter">Logout</span>
-            </button>
-          ) : (
-            <button 
-              onClick={() => setIsLoginOpen(true)} 
-              className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all group ${currentTheme === 'light' ? 'bg-slate-100 text-slate-900 hover:bg-blue-600 hover:text-white' : 'bg-slate-900 text-slate-300 hover:bg-blue-600 hover:text-white'}`}
-              title="Admin Login"
-            >
-              <LogIn size={20} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[8px] font-black uppercase tracking-tighter">Login</span>
-            </button>
-          )}
         </div>
       </aside>
 

@@ -11,7 +11,12 @@ export default function CVTab({ isEditing, currentTheme, data, updateField }) {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+    <motion.div 
+      initial={{ opacity: 0, x: 20 }} 
+      animate={{ opacity: 1, x: 0 }} 
+      exit={{ opacity: 0, x: -20 }}
+      className={currentTheme === 'light' ? 'font-serif' : ''}
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="space-y-3">
           <Section icon={Phone} title="CONTACT" isEditing={isEditing}>

@@ -16,11 +16,8 @@ import { useAuth } from "@/context/AuthContext";
 import { profileApi, projectApi } from "@/lib/api";
 
 const THEMES = {
-  midnight: { name: "Midnight", class: "bg-midnight", color: "blue" },
-  emerald: { name: "Emerald", class: "bg-emerald-theme", color: "emerald" },
-  deepsea: { name: "Deep Sea", class: "bg-deepsea", color: "cyan" },
-  slate: { name: "Dark Slate", class: "bg-slate-theme", color: "slate" },
-  light: { name: "Crystal White", class: "bg-light-theme", color: "white" }
+  midnight: { name: "Dark Model", class: "bg-midnight", color: "blue" },
+  light: { name: "Newspaper", class: "bg-light-theme", color: "white" }
 };
 
 const INITIAL_PROJECTS = [
@@ -398,7 +395,7 @@ export default function BIMPortfolio() {
   if (authLoading) return <div className="h-screen w-full flex items-center justify-center bg-slate-950"><Loader2 className="animate-spin text-blue-500" size={48} /></div>;
 
   return (
-    <div className={`h-screen w-full overflow-hidden transition-all duration-500 selection:bg-blue-500/30 flex ${activeTab === 'cv' ? 'font-cv' : 'font-portfolio'} ${THEMES[currentTheme].class} ${currentTheme === 'light' ? 'text-slate-900' : 'text-slate-100'}`}>
+    <div className={`h-screen w-full overflow-hidden transition-all duration-700 selection:bg-blue-500/30 flex ${currentTheme === 'light' ? 'font-body' : 'font-portfolio'} ${THEMES[currentTheme].class} ${currentTheme === 'light' ? 'text-slate-900' : 'text-slate-100'}`}>
       
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
 
@@ -447,16 +444,24 @@ export default function BIMPortfolio() {
           ))}
         </nav>
 
-        <div className="flex flex-col gap-3 mt-4">
+        <div className="flex flex-col gap-5 mt-6">
           {Object.keys(THEMES).map((themeKey) => (
             <button
               key={themeKey}
               onClick={() => setCurrentTheme(themeKey)}
-              className={`w-5 h-5 rounded-full border-2 transition-all ${
-                currentTheme === themeKey ? (currentTheme === 'light' ? "border-blue-600 scale-125" : "border-white scale-125") : "border-transparent opacity-40 hover:opacity-100"
+              className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all shadow-lg ${
+                currentTheme === themeKey 
+                  ? (currentTheme === 'light' ? "border-blue-600 scale-110 shadow-blue-500/20" : "border-white scale-110 shadow-white/20") 
+                  : "border-transparent opacity-40 hover:opacity-100 hover:scale-105"
               }`}
-              style={{ backgroundColor: themeKey === 'midnight' ? '#0f172a' : themeKey === 'emerald' ? '#064e3b' : themeKey === 'deepsea' ? '#164e63' : themeKey === 'slate' ? '#1e293b' : '#f8fafc' }}
-            />
+              style={{ 
+                backgroundColor: themeKey === 'midnight' ? '#0f172a' : '#fcfaf2',
+                color: themeKey === 'midnight' ? 'white' : '#0f172a'
+              }}
+              title={THEMES[themeKey].name}
+            >
+              {themeKey === 'midnight' ? <span className="font-black text-[9px] uppercase">Dark</span> : <span className="font-serif italic font-black text-[9px] uppercase">News</span>}
+            </button>
           ))}
         </div>
 
@@ -504,6 +509,51 @@ export default function BIMPortfolio() {
       {/* MAIN CONTENT */}
       <main className="flex-1 ml-20 md:ml-24 h-full overflow-y-auto custom-scrollbar">
         <div id="cv-content" className="max-w-6xl mx-auto px-4 md:px-8 py-12">
+          
+          {/* HIGH-TECH BIM VIDEO HERO */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative w-full h-[400px] md:h-[600px] rounded-[3rem] overflow-hidden mb-16 shadow-2xl border border-white/10 group"
+          >
+            <video 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
+            >
+              <source src="https://assets.mixkit.co/videos/preview/mixkit-architectural-3d-model-of-a-house-41766-large.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-8 md:p-12">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="flex items-center gap-3 mb-2"
+              >
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <span className="text-blue-400 font-black text-[10px] tracking-[0.3em] uppercase">BIM Technology & Digital Construction</span>
+              </motion.div>
+              <motion.h2 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 }}
+                className={`text-3xl md:text-6xl font-black tracking-tighter text-white ${currentTheme === 'light' ? 'font-serif' : 'font-portfolio'}`}
+              >
+                BIM <span className="text-blue-500">CONSTRUCTION</span> SEQUENCE
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.7 }}
+                transition={{ delay: 0.9 }}
+                className="text-white/60 text-xs md:text-sm max-w-md mt-2 font-medium"
+              >
+                From digital blueprints to structural reality. 4D simulation and Virtual Design Coordination for high-precision engineering.
+              </motion.p>
+            </div>
+          </motion.div>
           
           <div className="min-h-[700px]">
             <AnimatePresence mode="wait">

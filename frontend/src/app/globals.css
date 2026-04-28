@@ -11,7 +11,15 @@
 }
 
 .font-portfolio {
-  font-family: 'Roboto', sans-serif !important;
+  font-family: var(--font-geist-sans), sans-serif !important;
+}
+
+.font-serif {
+  font-family: var(--font-playfair), serif !important;
+}
+
+.font-body {
+  font-family: var(--font-lora), serif !important;
 }
 
 @layer utilities {
@@ -96,19 +104,35 @@ body {
 }
 
 .bg-light-theme {
-  background-color: #f4f1ea;
+  background-color: #fcfaf2;
   background-image: 
-    linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
-    url('https://www.transparenttextures.com/patterns/felt.png');
+    linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)),
+    url('https://www.transparenttextures.com/patterns/handmade-paper.png');
   background-attachment: fixed;
   position: relative;
+}
+
+.bg-light-theme::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(0, 0, 0, 0.02) 1px,
+      rgba(0, 0, 0, 0.02) 2px
+    );
+  pointer-events: none;
+  z-index: 1;
 }
 
 .bg-light-theme::after {
   content: "";
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%);
+  background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.05) 100%);
   pointer-events: none;
   z-index: 10;
 }

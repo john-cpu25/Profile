@@ -31,10 +31,14 @@ export default function TeamPortfolioTab({ projects, setProjects, isEditing, cur
   };
 
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }} 
+      animate={{ opacity: 1, scale: 1 }} 
+      className={`space-y-8 ${isLight ? 'font-body' : 'font-sans'}`}
+    >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div className="space-y-2">
-          <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">Team Portfolio</h2>
+          <h2 className={`text-4xl font-black tracking-tighter uppercase leading-none ${isLight ? 'font-serif' : ''}`}>Team Portfolio</h2>
           <p className="text-slate-400 font-medium max-w-lg text-sm">Showcase of collaborative excellence and high-impact structural engineering achievements.</p>
         </div>
         {isEditing && (

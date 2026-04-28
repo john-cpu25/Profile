@@ -74,7 +74,7 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
   const glassClass = currentTheme === 'light' ? 'bg-white/40 backdrop-blur-md' : 'bg-slate-950/40 backdrop-blur-md';
 
   return (
-    <div className={`fixed top-0 bottom-0 right-0 left-[80px] md:left-[96px] z-0 overflow-hidden font-sans flex flex-col transition-all duration-700 ${currentTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+    <div className={`fixed top-0 bottom-0 right-0 left-[80px] md:left-[96px] z-0 overflow-hidden flex flex-col transition-all duration-700 ${currentTheme === 'light' ? 'text-slate-900 font-body' : 'text-white font-sans'}`}>
        {/* THEME BACKGROUND OVERLAY */}
        <div className={`absolute inset-0 z-[-1] opacity-100 transition-all duration-700 ${currentTheme === 'midnight' ? 'bg-midnight' : currentTheme === 'emerald' ? 'bg-emerald-theme' : currentTheme === 'deepsea' ? 'bg-deepsea' : currentTheme === 'slate' ? 'bg-slate-theme' : 'bg-light-theme'}`} />
       {/* Navigation Controls (Moved to Bottom Right Pill) */}
@@ -98,7 +98,7 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#1e293b,transparent)] opacity-50" />
            <div className="relative z-10 text-center lg:text-left flex-1 max-w-5xl space-y-10">
               <div className="space-y-4">
-                <h1 className={`text-8xl md:text-[10rem] font-black uppercase tracking-tighter leading-[0.8] ${currentTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>Portfolio<span className="text-blue-600">.</span></h1>
+                <h1 className={`text-8xl md:text-[10rem] font-black uppercase tracking-tighter leading-[0.8] ${currentTheme === 'light' ? 'text-slate-900 font-serif' : 'text-white'}`}>Portfolio<span className="text-blue-600">.</span></h1>
                 <div className="flex flex-col gap-2">
                   {isEditing ? (
                     <>
@@ -188,7 +188,7 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
               {/* STICKY HEADER */}
               <div className={`sticky top-4 z-30 pt-10 pb-8 border border-r-0 transition-all duration-500 rounded-l-[3rem] px-10 -mr-10 pr-20 mb-8 ${currentTheme === 'light' ? 'bg-[#f5f2ed]/80 border-slate-300' : 'bg-slate-950/95 border-slate-900'} backdrop-blur-md shadow-xl`}>
                  <div className="flex justify-between items-end">
-                     <h3 className={`text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none ${currentTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>Experience</h3>
+                     <h3 className={`text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none ${currentTheme === 'light' ? 'text-slate-900 font-serif' : 'text-white'}`}>Experience</h3>
                     {isEditing && (
                       <div className="flex gap-4">
                         {selectedIndices.length > 0 && (

@@ -74,9 +74,7 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
   const glassClass = currentTheme === 'light' ? 'bg-white/40 backdrop-blur-md' : 'bg-slate-950/40 backdrop-blur-md';
 
   return (
-    <div className={`fixed top-0 bottom-0 right-0 left-[80px] md:left-[96px] z-0 overflow-hidden flex flex-col transition-all duration-700 ${currentTheme === 'light' ? 'text-slate-900 font-body' : 'text-white font-sans'}`}>
-       {/* THEME BACKGROUND OVERLAY */}
-       <div className={`absolute inset-0 z-[-1] opacity-100 transition-all duration-700 ${currentTheme === 'midnight' ? 'bg-midnight' : currentTheme === 'emerald' ? 'bg-emerald-theme' : currentTheme === 'deepsea' ? 'bg-deepsea' : currentTheme === 'slate' ? 'bg-slate-theme' : 'bg-light-theme'}`} />
+    <div className={`relative w-full min-h-screen overflow-hidden flex flex-col transition-all duration-700 ${currentTheme === 'light' ? 'text-slate-900 font-body' : 'text-white font-sans'}`}>
       {/* Navigation Controls (Moved to Bottom Right Pill) */}
       <div className={`absolute bottom-10 right-10 z-50 flex items-center p-1.5 rounded-[2rem] border shadow-2xl transition-all duration-500 ${currentTheme === 'light' ? 'bg-white/80 border-slate-200' : 'bg-slate-950/80 border-slate-800'} backdrop-blur-md`}>
         <button onClick={() => scroll('left')} className={`p-4 rounded-full transition-all active:scale-95 ${currentTheme === 'light' ? 'hover:bg-slate-100 text-slate-800' : 'hover:bg-slate-800 text-white'}`}>

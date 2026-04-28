@@ -17,7 +17,8 @@ import { profileApi, projectApi } from "@/lib/api";
 
 const THEMES = {
   midnight: { name: "Dark Model", class: "bg-midnight", color: "blue" },
-  light: { name: "Newspaper", class: "bg-light-theme", color: "white" }
+  light: { name: "Newspaper", class: "bg-light-theme", color: "white" },
+  skyline: { name: "High-Rise", class: "bg-skyline-theme", color: "slate" }
 };
 
 const INITIAL_PROJECTS = [
@@ -427,6 +428,7 @@ export default function BIMPortfolio() {
 
         <nav className="flex flex-col gap-4">
           {[
+            { id: "cv", icon: FileText, label: "CV" },
             { id: "personal", icon: UserIcon, label: "Works" },
             { id: "team", icon: Users, label: "Team" },
           ].map((tab) => (
@@ -460,7 +462,9 @@ export default function BIMPortfolio() {
               }}
               title={THEMES[themeKey].name}
             >
-              {themeKey === 'midnight' ? <span className="font-black text-[9px] uppercase">Dark</span> : <span className="font-serif italic font-black text-[9px] uppercase">News</span>}
+              {themeKey === 'midnight' ? <span className="font-black text-[9px] uppercase">Dark</span> : 
+               themeKey === 'light' ? <span className="font-serif italic font-black text-[9px] uppercase">News</span> :
+               <span className="font-black text-[9px] uppercase">Sky</span>}
             </button>
           ))}
         </div>
@@ -510,53 +514,53 @@ export default function BIMPortfolio() {
       <main className="flex-1 ml-20 md:ml-24 h-full overflow-y-auto custom-scrollbar">
         <div id="cv-content" className="max-w-6xl mx-auto px-4 md:px-8 py-12">
           
-          {/* HIGH-TECH BIM VIDEO HERO */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative w-full h-[400px] md:h-[600px] rounded-[3rem] overflow-hidden mb-16 shadow-2xl border border-white/10 group"
-          >
-            <video 
-              autoPlay 
-              loop 
-              muted 
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
+          {/* HERO SECTION - Only show on CV tab or as landing */}
+          {activeTab === 'cv' && (
+            <>
+              {currentTheme === 'skyline' ? (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="relative w-full h-[400px] md:h-[500px] rounded-[3rem] overflow-hidden mb-16 shadow-2xl border border-white/10 flex items-center justify-center"
+              style={{ 
+                backgroundImage: 'url("https://images.pexels.com/photos/323705/pexels-photo-323705.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
             >
-              <source src="https://assets.mixkit.co/videos/preview/mixkit-architectural-3d-model-of-a-house-41766-large.mp4" type="video/mp4" />
-            </video>
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-8 md:p-12">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex items-center gap-3 mb-2"
-              >
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-blue-400 font-black text-[10px] tracking-[0.3em] uppercase">BIM Technology & Digital Construction</span>
-              </motion.div>
-              <motion.h2 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 }}
-                className={`text-3xl md:text-6xl font-black tracking-tighter text-white ${currentTheme === 'light' ? 'font-serif' : 'font-portfolio'}`}
-              >
-                BIM <span className="text-blue-500">CONSTRUCTION</span> SEQUENCE
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.7 }}
-                transition={{ delay: 0.9 }}
-                className="text-white/60 text-xs md:text-sm max-w-md mt-2 font-medium"
-              >
-                From digital blueprints to structural reality. 4D simulation and Virtual Design Coordination for high-precision engineering.
-              </motion.p>
-            </div>
-          </motion.div>
+              <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" />
+              <div className="relative z-10 text-center px-6">
+                 <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-2xl">
+                   High-Rise <span className="text-blue-500">Engineering</span>
+                 </h2>
+                 <p className="text-white/80 text-sm md:text-lg font-bold mt-4 tracking-widest uppercase">Structural BIM & Coordination Excellence</p>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="relative w-full h-[300px] md:h-[400px] rounded-[3rem] overflow-hidden mb-16 shadow-2xl border border-white/10 group flex items-center justify-center bg-slate-900"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
+              <div className="relative z-10 text-center">
+                <h2 className={`text-3xl md:text-6xl font-black tracking-tighter text-white ${currentTheme === 'light' ? 'font-serif' : 'font-portfolio'}`}>
+                  BIM <span className="text-blue-500">CONSTRUCTION</span> SEQUENCE
+                </h2>
+                <p className="text-white/60 text-xs md:text-sm max-w-md mt-2 font-medium mx-auto px-4">
+                  Digital blueprints to structural reality. Virtual Design Coordination for high-precision engineering.
+                </p>
+              </div>
+            </motion.div>
+          )}
+          </>
+          )}
           
           <div className="min-h-[700px]">
             <AnimatePresence mode="wait">
+              {activeTab === "cv" && <CVTab key="cv" isEditing={isEditing} currentTheme={currentTheme} data={cvData} updateField={(f, v) => setCvData({...cvData, [f]: v})} />}
               {activeTab === "personal" && <PersonalPortfolioTab key="personal" activeTab={activeTab} headerData={headerData} setHeaderData={setHeaderData} projects={personalProjects} setProjects={setPersonalProjects} isEditing={isEditing} currentTheme={currentTheme} />}
               {activeTab === "team" && <TeamPortfolioTab key="team" projects={teamProjects} setProjects={setTeamProjects} isEditing={isEditing} currentTheme={currentTheme} />}
             </AnimatePresence>

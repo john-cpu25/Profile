@@ -137,6 +137,29 @@ body {
   z-index: 10;
 }
 
+.bg-skyline-theme {
+  background: linear-gradient(to bottom, #0f172a, #1e293b);
+  background-image: 
+    linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)),
+    url('https://images.pexels.com/photos/1103970/pexels-photo-1103970.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.skyline-glass {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bg-skyline-theme .glass-dark {
+  background: rgba(30, 41, 59, 0.3) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important;
+}
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;

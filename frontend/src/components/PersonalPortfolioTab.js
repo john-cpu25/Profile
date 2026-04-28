@@ -213,7 +213,7 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
                  {projects.map((project, index) => (
                     <div 
                       key={index} 
-                      onClick={() => scrollRef.current.scrollTo({ left: (index + 2) * scrollRef.current.clientWidth, behavior: 'smooth' })} 
+                      onClick={() => scrollRef.current.scrollTo({ left: (index + 2) * scrollRef.current.clientWidth, behavior: 'auto' })} 
                       className={`group flex items-center justify-between py-3 px-5 rounded-[1.5rem] border transition-all cursor-pointer ${selectedIndices.includes(index) ? 'bg-red-500/10 border-red-500/30' : 'hover:bg-blue-600/10 border-transparent hover:border-blue-500/20 bg-slate-900/5'}`}
                     >
                        <div className="flex items-center gap-4 overflow-hidden">
@@ -264,7 +264,7 @@ export default function PersonalPortfolioTab({ headerData, setHeaderData, projec
                <div className="flex items-center gap-12">
                    {/* QUICK RETURN TO INDEX */}
                    <button 
-                      onClick={() => scrollRef.current.scrollTo({ left: scrollRef.current.clientWidth, behavior: 'smooth' })}
+                      onClick={() => scrollRef.current.scrollTo({ left: scrollRef.current.clientWidth, behavior: 'auto' })}
                       className="px-6 py-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2 group shadow-xl shrink-0"
                    >
                       <Layers size={14} className="group-hover:rotate-12 transition-transform" />

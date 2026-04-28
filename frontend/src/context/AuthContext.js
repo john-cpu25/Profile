@@ -34,10 +34,11 @@ export function AuthProvider({ children }) {
       const data = await authApi.login(username, password);
       localStorage.setItem("token", data.access_token);
       await checkUser();
-      return true;
+      return { success: true };
     } catch (err) {
-      setError(err.response?.data?.detail || "Login failed");
-      return false;
+      const errMsg = err.response?.data?.detail || "Login failed (Backend might be offline)";
+      setError(errMsg);
+      return { success: false, error: errMsg };
     }
   };
 

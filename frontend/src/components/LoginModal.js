@@ -17,11 +17,11 @@ export default function LoginModal({ isOpen, onClose }) {
     setLoading(true);
     setError(null);
     
-    const success = await login(username, password);
-    if (success) {
+    const result = await login(username, password);
+    if (result.success) {
       onClose();
     } else {
-      setError(authError || "Invalid credentials");
+      setError(result.error || "Invalid credentials");
     }
     setLoading(false);
   };

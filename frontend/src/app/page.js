@@ -67,15 +67,62 @@ export default function BIMPortfolio() {
   const [cvData, setCvData] = useState(INITIAL_CV_DATA);
   const [personalProjects, setPersonalProjects] = useState(INITIAL_PROJECTS);
   const [teamProjects, setTeamProjects] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   // Load data from API or LocalStorage
   useEffect(() => {
+    // Always try to load public data first so visitors see the latest updates
+    loadPublicData("admin");
+    
+    // If logged in, we also ensure we have the latest private/editable state
     if (user) {
       loadDataFromApi();
-    } else {
-      loadDataFromLocalStorage();
     }
   }, [user]);
+
+  const loadPublicData = async (username) => {
+    try {
+      const data = await profileApi.getPublicProfile(username);
+      if (data && data.profile) {
+        const profile = data.profile;
+        const newHeaderData = {
+          name: data.full_name || "Nguyen Thanh Nhan",
+          title: profile.title || "Senior BIM Engineer & Coordinator",
+          careerGoals: profile.career_goals || INITIAL_CV_DATA.careerGoals,
+          photo: profile.photo
+        };
+        setHeaderData(newHeaderData);
+
+        const newCvData = {
+          contact: { 
+            email: profile.email || INITIAL_CV_DATA.contact.email, 
+            phone: profile.phone || INITIAL_CV_DATA.contact.phone, 
+            location: profile.location || INITIAL_CV_DATA.contact.location, 
+            age: profile.age || INITIAL_CV_DATA.contact.age 
+          },
+          software: typeof profile.software === 'string' ? JSON.parse(profile.software || "[]") : (profile.software || []),
+          skills: typeof profile.skills === 'string' ? JSON.parse(profile.skills || "[]") : (profile.skills || []),
+          education: typeof profile.education === 'string' ? JSON.parse(profile.education || "[]") : (profile.education || []),
+          experience: typeof profile.experience === 'string' ? JSON.parse(profile.experience || "[]") : (profile.experience || []),
+          languages: typeof profile.languages === 'string' ? JSON.parse(profile.languages || "[]") : (profile.languages || []),
+          certificates: typeof profile.certificates === 'string' ? JSON.parse(profile.certificates || "[]") : (profile.certificates || [])
+        };
+        setCvData(newCvData);
+        setLastUpdated(profile.updated_at);
+        
+        // Also load projects for this user
+        if (data.projects && data.projects.length > 0) {
+          const pProjects = data.projects.filter(p => !p.is_team_project).map(mapProjectFromApi);
+          const tProjects = data.projects.filter(p => p.is_team_project).map(mapProjectFromApi);
+          setPersonalProjects(pProjects);
+          setTeamProjects(tProjects);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to load public data, falling back to local storage", err);
+      loadDataFromLocalStorage();
+    }
+  };
 
   const loadDataFromApi = async () => {
     try {
@@ -97,14 +144,15 @@ export default function BIMPortfolio() {
             location: profile.location || INITIAL_CV_DATA.contact.location, 
             age: profile.age || INITIAL_CV_DATA.contact.age 
           },
-          software: JSON.parse(profile.software || "[]"),
-          skills: JSON.parse(profile.skills || "[]"),
-          education: JSON.parse(profile.education || "[]"),
-          experience: JSON.parse(profile.experience || "[]"),
-          languages: JSON.parse(profile.languages || "[]"),
-          certificates: JSON.parse(profile.certificates || "[]")
+          software: typeof profile.software === 'string' ? JSON.parse(profile.software || "[]") : (profile.software || []),
+          skills: typeof profile.skills === 'string' ? JSON.parse(profile.skills || "[]") : (profile.skills || []),
+          education: typeof profile.education === 'string' ? JSON.parse(profile.education || "[]") : (profile.education || []),
+          experience: typeof profile.experience === 'string' ? JSON.parse(profile.experience || "[]") : (profile.experience || []),
+          languages: typeof profile.languages === 'string' ? JSON.parse(profile.languages || "[]") : (profile.languages || []),
+          certificates: typeof profile.certificates === 'string' ? JSON.parse(profile.certificates || "[]") : (profile.certificates || [])
         };
         setCvData(newCvData);
+        setLastUpdated(profile.updated_at);
         localStorage.setItem("cvData", JSON.stringify(newCvData));
       }
 
@@ -175,9 +223,9 @@ export default function BIMPortfolio() {
         certificates: JSON.stringify(cvData.certificates)
       });
       
-      // 2. Save Projects (Simple strategy: delete and recreate for now)
-      // Note: In a real app, we'd use IDs and PUT/DELETE. 
-      // For this BIM portfolio, we'll recreate to ensure everything matches the UI perfectly.
+      // 2. Save Projects (FIX: Delete all old projects first to avoid duplicates)
+      await projectApi.deleteProjects();
+
       const allProjects = [
         ...personalProjects.map(p => ({ ...p, is_team_project: false })),
         ...teamProjects.map(p => ({ ...p, is_team_project: true }))
@@ -440,6 +488,16 @@ export default function BIMPortfolio() {
             <Download size={22} className="group-hover:scale-110 transition-transform" />
             <span className="text-[8px] font-black uppercase tracking-tighter">Export</span>
           </button>
+
+          {/* Last Updated indicator */}
+          {lastUpdated && (
+            <div className={`mt-4 px-2 py-2 border-t flex flex-col items-center text-center opacity-50 ${currentTheme === 'light' ? 'border-slate-100' : 'border-slate-800'}`}>
+              <span className="text-[7px] font-bold uppercase tracking-tighter mb-1">Updated</span>
+              <span className="text-[8px] font-medium leading-tight">
+                {new Date(lastUpdated).toLocaleDateString('vi-VN')}
+              </span>
+            </div>
+          )}
         </div>
       </aside>
 

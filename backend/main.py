@@ -125,6 +125,12 @@ def get_projects(is_team: bool = None, skip: int = 0, limit: int = 100, db: Sess
     projects = query.offset(skip).limit(limit).all()
     return projects
 
+@app.delete("/api/projects")
+def delete_all_user_projects(current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+    db.query(models.Project).filter(models.Project.user_id == current_user.id).delete()
+    db.commit()
+    return {"message": "All projects deleted successfully"}
+
 @app.get("/api/projects/{project_id}", response_model=schemas.Project)
 def get_project(project_id: int, db: Session = Depends(get_db)):
     project = db.query(models.Project).filter(models.Project.id == project_id).first()

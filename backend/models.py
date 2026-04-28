@@ -40,6 +40,7 @@ class Profile(Base):
 
     linkedin_url = Column(String, nullable=True)
     github_url = Column(String, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="profile")
 

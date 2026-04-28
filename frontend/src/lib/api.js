@@ -67,6 +67,10 @@ export const projectApi = {
   getProject: async (id) => {
     const response = await api.get(`/api/projects/${id}`);
     return response.data;
+  },
+  deleteProjects: async () => {
+    const response = await api.delete('/api/projects');
+    return response.data;
   }
 };
 

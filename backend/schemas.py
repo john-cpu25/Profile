@@ -58,6 +58,7 @@ class ProfileBase(BaseModel):
     
     linkedin_url: Optional[str] = None
     github_url: Optional[str] = None
+    updated_at: Optional[datetime] = None
 
 class ProfileCreate(ProfileBase):
     pass
